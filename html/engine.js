@@ -1,3 +1,40 @@
+(function () {
+    const STEP = 1000 / 60;
+    const MAX_STEPS = 4;
+    const rafNative = window.requestAnimationFrame.bind(window);
+    let pending = new Map();
+    let nextId = 1, running = false, lastT = 0, acc = 0;
+
+    function pump(ts) {
+        if (!lastT) lastT = ts;
+        let elapsed = ts - lastT;
+        lastT = ts;
+        if (elapsed > 250) elapsed = 250;
+        acc += elapsed;
+
+        let steps = 0;
+        while (acc >= STEP && steps < MAX_STEPS) { acc -= STEP; steps++; }
+        if (steps === MAX_STEPS) acc = 0;
+
+        for (let s = 0; s < steps && pending.size; s++) {
+            const due = pending;
+            pending = new Map();
+            due.forEach((cb) => { try { cb(ts); } catch (e) {} });
+        }
+
+        if (pending.size) rafNative(pump);
+        else { running = false; lastT = 0; acc = 0; }
+    }
+
+    window.requestAnimationFrame = function (cb) {
+        const id = nextId++;
+        pending.set(id, cb);
+        if (!running) { running = true; lastT = 0; acc = 0; rafNative(pump); }
+        return id;
+    };
+    window.cancelAnimationFrame = function (id) { pending.delete(id); };
+})();
+
 const MG = (function () {
     const games = {};
     let current = null;
