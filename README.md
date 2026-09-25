@@ -1,3 +1,11 @@
+# EDITS [VIBE CODED]
+
+Added option to display minigames in DUI replace texture mode and play the minigames in 3d world space DUI.
+</br>
+Added password minigame
+</br>
+Changed style to windwos XP
+
 # Ay-eye Minigames
 
 A **standalone, framework-agnostic** pack of 70 cinematic skill-check minigames
