@@ -181,7 +181,338 @@ exports.eye_minigames:Start('flatline', { difficulty = 4 }, function(ok)
 end)
 ```
 
----
+### Optional synchronized DUI
+
+DUI is opt-in. **Normal `/mg` and `exports:Play()` are unchanged** and still use the original fullscreen NUI.
+
+For prop DUIs, `resW`/`resH` may be supplied in `prop` to keep the CEF viewport and mouse coordinate mapping tied to the replacement texture dimensions.
+
+**Mouse/input behavior:** DUI controller input is now transported through the fullscreen NUI capture layer. Mouse coordinates are raycast against the configured world/prop screen in Lua and then sent to the DUI browser with `SendDuiMouseMove`, `SendDuiMouseDown`, `SendDuiMouseUp`, and `SendDuiMouseWheel`. This means HTML buttons, sliders, drag controls, and `<input>` elements receive real browser mouse interaction instead of relying on disabled GTA controls.
+
+**Per-prop UV calibration:** `prop.uv` is available directly in the `StartDui` / `PlayDui` export. `uMin/uMax/vMin/vMax` define the normalized clickable screen rectangle. `flipX`, `flipY`, and `rotate` (`0`, `90`, `180`, `270`) correct texture orientation when a model's screen is mirrored or rotated.
+
+```lua
+prop = {
+    -- ...
+    uv = {
+        uMin = 0.0,
+        uMax = 1.0,
+        vMin = 0.0,
+        vMax = 1.0,
+
+        flipX = false,
+        flipY = false,
+        rotate = 0
+    }
+}
+```
+
+
+When you use `StartDui` / `PlayDui`, the same HTML minigame that normally appears in the fullscreen NUI is loaded into a FiveM DUI browser. The DUI browser is then used as a **runtime texture replacement on an existing prop**, or as a **two-coordinate world screen**.
+
+#### 1. Prop texture-replace DUI
+
+This is the recommended DUI mode when the minigame should appear on a monitor, tablet, terminal, arcade screen, etc.
+
+The resource does **not** spawn the prop. It finds the existing object, creates a DUI browser, creates a runtime texture from the DUI handle, and calls `AddReplaceTexture(originalTxd, originalTexture, runtimeTxd, runtimeTexture)`. The replacement is removed when the minigame ends.
+
+```lua
+CreateThread(function()
+    local success = exports.eye_minigames:PlayDui('password', {
+        difficulty = 2,
+        password = '1234',
+
+        prop = {
+            model = 'hei_prop_hei_securitypanel',
+            coords = vec4(144.69, -1048.38, 29.88, 173.16),
+            txd = 'hei_prop_hei_securitypanel',
+            texture = 'prop_hei_securitypanel_screen',
+
+            -- Interactive Bounds & Click Area
+            screenWidth = 0.60,
+            screenHeight = 0.34,
+            screenOffset = vector3(0.0, 0.0, 0.0),
+
+            -- Camera Positioning
+            camera = true,
+            cameraDistance = 1.0,
+            cameraHeight = 0.0,
+            cameraFov = 40.0,
+            cameraSide = 1.0,
+
+            -- Optional UV adjustment (defaults to 0..1)
+            uv = { uMin = 0.0, uMax = 1.0, vMin = 0.0, vMax = 1.0 }
+        }
+    })
+
+    print('result:', success)
+end)
+```
+
+**Important:** `txd` and `texture` are the **original texture dictionary/name on the prop**, not the runtime DUI texture. They are model-specific. The prop should already exist when the call is made.
+
+If the prop was spawned by another resource, you can pass its entity handle as `prop.entity` instead of relying on the nearby-object lookup.
+
+#### 2. Two-coordinate world DUI
+
+If you do not want a prop, provide two opposite world coordinates. The HTML is still the exact same minigame UI, but the DUI is rendered on a world-space screen.
+
+```lua
+CreateThread(function()
+    local success = exports.eye_minigames:PlayDui('vaultspin', {
+        difficulty = 3,
+        topLeft = vector4(123.40, -456.70, 30.20, 90.0),
+        bottomRight = vector4(127.40, -456.70, 28.20, 90.0),
+        duiRange = 25.0
+    })
+
+    print('result:', success)
+end)
+```
+
+`w` is the heading of the screen plane. The heading is now used to build the screen's right/normal axes, so rotated two-coordinate screens stay aligned with the DUI camera and mouse raycast.
+
+#### DUI exports
+
+```lua
+exports.eye_minigames:StartDui(game, opts, callback)
+exports.eye_minigames:PlayDui(game, opts)
+
+exports.eye_minigames:SetDuiCameraDistance(1.25)
+exports.eye_minigames:SetDuiCameraFov(40.0)
+exports.eye_minigames:SetDuiCameraSide(1) -- 1 or -1
+exports.eye_minigames:ToggleDuiCamera(true)
+```
+
+`StartDui` / `PlayDui` require a valid `prop` or both `topLeft` and `bottomRight`. They no longer silently fall back to fullscreen NUI when an explicit DUI call is missing placement data.
+
+#### DUI test commands
+
+Test commands are enabled by default with `Config.EnableTestCommands = true` in `config.lua`.
+
+**Two-coordinate DUI:**
+
+```text
+/mgdui <id> <difficulty> <topLeft vector4> <bottomRight vector4>
+```
+
+Example:
+
+```text
+/mgdui password 2 vector4(123.40,-456.70,30.20,90.0) vector4(124.80,-456.70,29.40,90.0)
+```
+
+The original `/mg` also supports the same two-coordinate syntax:
+
+```text
+/mg password 2 vector4(123.40,-456.70,30.20,90.0) vector4(124.80,-456.70,29.40,90.0)
+```
+
+**Prop texture-replace DUI:**
+
+Stand within roughly 3 metres of the existing prop and run:
+
+```text
+/mgduiprop <id> [difficulty] [model] [txd] [texture]
+```
+
+For example:
+
+```text
+/mgduiprop password 2 prop_monitor_01b prop_monitor_01b prop_monitor_01b
+/mgduiprop password 2 hei_prop_hei_securitypanel hei_prop_hei_securitypanel prop_hei_securitypanel_screen
+```
+
+The command searches for the configured model within 3 metres of the player, then uses the **actual existing object's position and rotation**. It does **not** spawn the model. The DUI screen plane and camera are aligned to the prop's front direction. You can also configure the defaults in `config.lua`:
+
+```lua
+local success = exports.eye_minigames:PlayDui('password', {
+    -- ============================================
+    -- GAME SETTINGS
+    -- ============================================
+    
+    -- difficulty: How hard the minigame is (1-5)
+    -- 1 = Very Easy, 2 = Easy, 3 = Medium, 4 = Hard, 5 = Very Hard
+    -- Higher difficulty = shorter timers, more complex puzzles
+    difficulty = 2,
+    
+    -- password: The password the player needs to enter
+    -- This can be any string. The UI will show input fields for each character.
+    -- Example: "HELLO" would show 5 input boxes
+    password = lib.callback.await('flex_bankrob:server:fleeca:GetVaultPassword', false),
+    
+    -- ============================================
+    -- PROP SETTINGS (What prop to show the DUI on)
+    -- ============================================
+    prop = {
+        
+        -- ============================================
+        -- PROP IDENTIFICATION
+        -- ============================================
+        
+        -- model: The GTA prop model name to look for
+        -- The script will find this prop near the player (within 3m)
+        -- Change this to match the prop you want to use
+        model = 'hei_prop_hei_securitypanel',
+        
+        -- coords: The exact world position of the prop
+        -- Format: vec4(x, y, z, heading)
+        -- The heading controls which direction the prop faces
+        -- Use /coords in game to find exact coordinates
+        coords = vec4(144.69186401367, -1048.3861083984, 29.882019042969, 173.16479492188),
+        
+        -- ============================================
+        -- TEXTURE REPLACEMENT SETTINGS
+        -- ============================================
+        
+        -- txd: The texture dictionary (container) name
+        -- This is the .ytd file name without the extension
+        -- Must match exactly what the prop uses
+        txd = 'hei_prop_hei_securitypanel',
+        
+        -- texture: The specific texture name within the TXD
+        -- This is the texture that will be replaced with the DUI
+        -- Must match exactly what the prop uses
+        texture = 'prop_hei_securitypanel_screen',
+        
+        -- ============================================
+        -- CLICKABLE AREA SETTINGS (Most important for fixing click issues)
+        -- ============================================
+        
+        -- screenWidth: The width of the clickable area in world units
+        -- This determines how far left/right you can click
+        -- Too small = can't click edges, Too large = clicks outside the UI
+        -- Default: 0.60, Range: 0.10 to 2.0
+        -- Increase if buttons on the sides aren't clickable
+        screenWidth = 0.60,
+        
+        -- screenHeight: The height of the clickable area in world units
+        -- This determines how far up/down you can click
+        -- Too small = can't click top/bottom, Too large = clicks outside the UI
+        -- Default: 0.34, Range: 0.10 to 2.0
+        -- Increase if buttons at top/bottom aren't clickable
+        screenHeight = 0.34,
+        
+        -- screenOffset: Moves the entire clickable area
+        -- Format: vector3(x, y, z) where z is up/down (0 = no offset)
+        -- Positive x = right, Negative x = left
+        -- Positive y = forward/back (rarely used for flat surfaces)
+        -- Positive z = up, Negative z = down
+        -- Use this if the UI appears shifted relative to the clickable area
+        -- Example: vector3(0.05, 0, 0) moves it 0.05 units right
+        screenOffset = vector3(0.0, 0.0, 0.0),
+        
+        -- ============================================
+        -- CAMERA SETTINGS (Controls the view of the prop)
+        -- ============================================
+        
+        -- camera: Whether to enable the scripted camera
+        -- true = Camera will automatically look at the prop
+        -- false = Camera won't move, player can look manually
+        camera = true,
+        
+        -- cameraDistance: How far the camera is from the screen
+        -- Smaller = closer (zoomed in), Larger = farther (zoomed out)
+        -- Default: 1.0, Range: 0.1 to 10.0
+        -- 0.5 = Very close, 1.0 = Good default, 2.0 = Far away
+        cameraDistance = 1.0,
+        
+        -- cameraHeight: Vertical offset of the camera
+        -- Positive = camera is higher, Negative = camera is lower
+        -- Default: 0.0, Range: -5.0 to 5.0
+        -- Use this to center the view vertically on the screen
+        cameraHeight = 0.0,  -- Not shown in your example but available
+        
+        -- cameraFov: Field of view in degrees
+        -- Smaller = more zoomed in, Larger = more zoomed out
+        -- Default: 40.0, Range: 10.0 to 120.0
+        -- 30 = Very zoomed, 40 = Good default, 60 = Wide view
+        cameraFov = 40.0,
+        
+        -- cameraSide: Which side of the prop to view from
+        -- 1 = Front of the screen (normal view)
+        -- -1 = Back of the screen (looking through it)
+        -- Default: 1.0
+        -- Change to -1 if the camera appears on the wrong side
+        cameraSide = 1.0,
+        
+        -- cameraOffset: Additional offset for the camera position
+        -- Format: vector3(x, y, z)
+        -- Use this if the camera needs fine-tuning relative to the screen
+        -- Example: vector3(0, 0, 0.1) moves camera up slightly
+        cameraOffset = vector3(0.0, 0.0, 0.0),  -- Not shown but available
+        
+        -- UV rectangle used for click mapping.
+        -- Default maps the complete physical screen to the DUI.
+        uv = {
+            uMin = 0.0,
+            uMax = 1.0,
+            vMin = 0.0,
+            vMax = 1.0
+        },
+
+    },
+})
+```
+
+```lua
+Config.DuiTestProp = {
+    model = 'prop_monitor_01b',
+    txd = 'prop_monitor_01b',
+    texture = 'prop_monitor_01b',
+    screenWidth = 0.60,
+    screenHeight = 0.34,
+    screenOffset = vector3(0.0, 0.0, 0.0),
+    camera = true,
+    cameraDistance = 1.0,
+    cameraFov = 40.0,
+    cameraSide = 1.0
+}
+```
+
+Then:
+
+```text
+/mgduiprop password 2
+```
+
+**Stop/debug:**
+
+```text
+/mgduistop
+/mgcam
+/mgcamdist 1.25
+/mgcamfov 40
+/mgcamside 1
+/mgduidebug
+```
+
+Use `/mglist` to see the available game IDs.
+
+#### How the DUI keeps the same minigame UI
+
+There is only one HTML game implementation. Normal NUI opens `html/index.html` with the game payload; DUI creates another instance of that same `index.html` inside Chromium and sends the same `game`, difficulty, options, seed, and session information to it.
+
+The DUI page changes only its outer presentation to fill the DUI browser surface. The game scripts, HUD, timer, board, sounds, success/failure logic, and result contract are the same ones used by normal `/mg`.
+
+Keyboard input is captured once by the hidden NUI page and forwarded to the controller DUI. Mouse input goes from the GTA cursor to the world/prop screen ray and then into the DUI browser. This avoids the duplicate key/click behavior that can otherwise occur when mixing NUI and DUI input paths.
+
+#### Lifecycle
+
+- DUI is created only for explicit DUI calls or `/mgdui`/`/mgduiprop`.
+- Prop texture replacement is removed when the session ends.
+- The DUI browser and runtime texture are destroyed on cleanup/resource stop.
+- Normal fullscreen NUI behavior is untouched.
+- Synchronized observers remain read-only and follow the controller session.
+
+
+### DUI virtual cursor implementation
+
+The DUI page-side cursor is shipped as plain browser JavaScript (`html/cursor.js`,
+`html/keys.js`, `html/scroll.js`) so FiveM CEF can load it directly without a
+TypeScript/Vite build step. It follows the `kkMihai/fivem-dui-virtual-cursor-example`
+architecture: Lua moves CEF's mouse position, the page draws the virtual cursor,
+and keyboard/scroll behavior is synthesized inside the DUI document.
 
 ## Chain mode (multi-game sequences)
 
@@ -191,14 +522,18 @@ jobs. Blocking; returns `success, completed, total`.
 ```lua
 CreateThread(function()
     -- simple: list of ids, shared difficulty
-    local ok, done, total = exports.eye_minigames:PlayChain(
-        { 'lockpick', 'breachmatrix', 'override' },
-        { difficulty = 3 }
-    )
-    if ok then
-        print('full chain cleared!')
+    local success, completed, total = exports.eye_minigames:PlayChain({
+        { game = 'keypad', difficulty = 2 },
+        { game = 'livewire', difficulty = 3 },
+        { game = 'vaultspin', difficulty = 4 }
+    }, {
+        allowCancel = false
+    })
+
+    if success then
+        print("All security layers bypassed!")
     else
-        print(('failed at stage %d/%d'):format(done + 1, total))
+        print(string.format("Failed at step %d of %d", completed + 1, total))
     end
 end)
 ```
@@ -282,7 +617,36 @@ exports.eye_minigames:Play('mining',   { difficulty = 2, volume = 0.8 })
 
 ## Notes
 
-- Pure client-side skill checks. `server/main.lua` is a stub for your own
-  anti-abuse hooks (rate-limiting etc.).
+- Core skill checks remain client-side. `server/main.lua` is a stub for your own
+  anti-abuse hooks (rate-limiting etc.); synchronized world DUI sessions are
+  handled separately by `server/dui.lua`.
 - Built on canvas + vanilla JS NUI. Zero external runtime deps.
 - One game runs at a time; concurrent calls return `false` immediately.
+
+
+## DUI orientation notes (2.6.0)
+
+- Two-coordinate DUI: the `heading` in the first `vector4` is the direction the camera faces. The camera is placed on the opposite side of the screen and looks toward the center.
+- `prop_monitor_01b`: the screen is 90 degrees left of the prop entity forward vector, so the prop DUI camera and screen plane use that orientation.
+- Prop DUI texture replacement waits for the source texture dictionary and stabilizes the CEF/runtime texture before applying `AddReplaceTexture`. `prop_monitor_01b` uses `prop_desk_monitor` as its texture dictionary.
+
+
+## DUI fixes in v2.7.0
+
+- DUI runtime textures no longer depend on a returned value from `CreateRuntimeTextureFromDuiHandle`; the native is treated as a successful void-style call when it executes successfully.
+- Removed the multi-second original-TXD streaming wait from prop DUI startup.
+- Removed unnecessary startup waits after the DUI runtime texture is created.
+- Two-coordinate DUI renders through `DrawSpritePoly` using the runtime DUI texture.
+- `vector4(..., heading)` now controls the world-screen facing direction used by the camera.
+- Prop DUI camera is flipped 180 degrees so it views the monitor from the front.
+- Camera activation no longer adds an extra artificial delay after the DUI becomes available.
+
+### Test commands
+
+```text
+/mgdui password 2 vector4(x1,y1,z1,heading) vector4(x2,y2,z2,heading)
+/mgduiprop password 2
+/mgduistop
+```
+
+`/mgdui` is the two-coordinate world DUI. `/mgduiprop` replaces the configured existing prop texture.

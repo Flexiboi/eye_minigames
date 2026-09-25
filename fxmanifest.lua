@@ -3,17 +3,23 @@ game 'gta5'
 
 author 'Ay-eye'
 description 'Ay-eye Minigames — a standalone, framework-agnostic pack of 70 cinematic skill-check minigames with a clean export API'
-version '2.3.1'
+version '2.7.0'
 
 lua54 'yes'
 
-shared_script 'config.lua'
+shared_scripts{
+    '@ox_lib/init.lua',
+    'config.lua'
+}
 
 client_scripts {
+    'client/duicursor.lua',
+    'client/dui.lua',
     'client/main.lua'
 }
 
 server_scripts {
+    'server/dui.lua',
     'server/main.lua'
 }
 
@@ -48,6 +54,7 @@ files {
     'html/games/skillcheck.js',
     'html/games/lockpick.js',
     'html/games/keypad.js',
+    'html/games/password.js',
     'html/games/quicktime.js',
     'html/games/mash.js',
     'html/games/reaction.js',
@@ -94,5 +101,8 @@ files {
     'html/games/cashcount.js',
     'html/games/counterfeit.js',
     'html/games/chopshop.js',
+    'html/keys.js',
+    'html/scroll.js',
+    'html/cursor.js',
     'html/boot.js'
 }

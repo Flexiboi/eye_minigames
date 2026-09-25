@@ -1,164 +1,1086 @@
-/* Ay-eye Minigames — shared stylesheet */
-
-@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Azeret+Mono:wght@400;500;700&display=swap');
+/* ============================================================
+   EYE MINIGAMES — READABLE WINDOWS XP THEME
+   ============================================================ */
 
 :root {
-    --accent: #00e0b8;
-    --danger: #ff3b5c;
-    --success: #39d98a;
-    --bg: #0a0e14;
-    --panel: rgba(14, 19, 28, 0.92);
-    --line: rgba(255, 255, 255, 0.08);
-    --text: #e8edf2;
-    --muted: #6b7686;
-    --display: 'Chakra Petch', sans-serif;
-    --mono: 'Azeret Mono', ui-monospace, monospace;
+    /* XP palette */
+    --xp-blue: #0054e3;
+    --xp-blue-dark: #003c9e;
+    --xp-blue-light: #3f8cff;
+    --xp-title: #0a5bd7;
+
+    --xp-bg: #ece9d8;
+    --xp-bg-light: #f7f5ed;
+    --xp-panel: #ffffff;
+    --xp-panel-alt: #f1f0e8;
+
+    --xp-border: #7f7f7f;
+    --xp-border-light: #ffffff;
+    --xp-border-dark: #404040;
+
+    --xp-text: #111111;
+    --xp-text-soft: #333333;
+    --xp-muted: #555555;
+
+    --xp-green: #168a16;
+    --xp-green-light: #dff4df;
+
+    --xp-red: #b40000;
+    --xp-red-light: #f7dddd;
+
+    --xp-yellow: #fff6a8;
+    --xp-yellow-border: #c5a900;
+
+    --xp-shadow: rgba(0, 0, 0, 0.35);
+
+    --display: "Segoe UI", Tahoma, Arial, sans-serif;
+    --mono: "Lucida Console", "Courier New", monospace;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+/* ============================================================
+   GLOBAL
+   ============================================================ */
 
-html, body {
-    width: 100%; height: 100%;
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
     overflow: hidden;
+
     background: transparent;
-    font-family: var(--mono);
-    color: var(--text);
+
+    color: var(--xp-text);
+
+    font-family: var(--display);
+
     user-select: none;
+    -webkit-user-select: none;
 }
 
-.hidden { display: none !important; }
+button,
+input {
+    font-family: inherit;
+}
+
+button {
+    color: inherit;
+}
+
+.hidden {
+    display: none !important;
+}
 
 #root {
-    position: fixed; inset: 0;
-    display: grid; place-items: center;
+    position: fixed;
+    inset: 0;
+
+    display: grid;
+    place-items: center;
 }
 
-#stage {
-    position: relative; z-index: 1;
-    width: 560px;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    box-shadow:
-        0 0 0 1px rgba(0,0,0,0.4),
-        0 30px 80px rgba(0,0,0,0.6),
-        0 0 60px -20px var(--accent);
+/* ============================================================
+   NORMAL MINIGAME WINDOW
+   ============================================================ */
+
+#stage:not(.dui-mode) {
+    width: 680px;
+    max-width: 94vw;
+    max-height: 94vh;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    position: relative !important;
+
     overflow: hidden;
-    animation: panel-in 0.28s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+
+    background: var(--xp-bg);
+
+    border: 2px solid var(--xp-blue-dark);
+    border-radius: 6px;
+
+    box-shadow:
+        0 0 0 1px #ffffff,
+        0 16px 50px rgba(0, 0, 0, 0.65);
+
+    animation: panel-in 0.25s ease-out;
 }
 
-@keyframes panel-in {
-    from { opacity: 0; transform: translateY(14px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0)    scale(1); }
+/* ============================================================
+   DUI WINDOW
+   ============================================================ */
+
+#stage.dui-mode {
+    position: fixed !important;
+    inset: 0 !important;
+
+    width: 100vw !important;
+    height: 100vh !important;
+
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    overflow: hidden !important;
+
+    background: var(--xp-bg);
+
+    border: 2px solid var(--xp-blue-dark);
+    border-radius: 0 !important;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.7),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+
+    animation: none !important;
+
+    pointer-events: all !important;
 }
 
-/* ---------------- HUD ---------------- */
-#hud {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--line);
-    background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+/* ============================================================
+   XP TITLE BAR
+   ============================================================ */
+
+#stage.dui-mode #hud,
+#stage:not(.dui-mode) #hud {
+    min-height: 32px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 5px 8px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #3f8cff 0%,
+            #1469d8 20%,
+            #0759c9 55%,
+            #0645a9 100%
+        );
+
+    border-bottom: 1px solid #003c9e;
+
+    color: #ffffff;
+
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.45);
 }
-#hud-title { display: flex; flex-direction: column; gap: 2px; }
-#hud-tag {
-    font-family: var(--mono); font-size: 10px; letter-spacing: 3px;
-    color: var(--accent); text-transform: uppercase;
+
+/* ============================================================
+   HUD TEXT
+   ============================================================ */
+
+#stage #hud-tag {
+    font-family: var(--display);
+    font-size: 11px;
+    font-weight: 700;
+
+    color: #ffffff;
+
+    letter-spacing: 0.3px;
 }
-#hud-name {
-    font-family: var(--display); font-weight: 700;
-    font-size: 18px; letter-spacing: 0.5px;
+
+#stage #hud-name {
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 700;
+
+    color: #ffffff;
+
+    letter-spacing: 0.2px;
 }
-#hud-timer { display: flex; align-items: center; gap: 10px; }
-#timer-bar {
-    width: 120px; height: 6px; border-radius: 3px;
-    background: rgba(255,255,255,0.08); overflow: hidden;
+
+#stage #hud-timer {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    margin-left: auto;
 }
-#timer-fill {
-    height: 100%; width: 100%;
-    background: linear-gradient(90deg, var(--accent), #fff);
+
+/* ============================================================
+   TIMER
+   ============================================================ */
+
+#stage #timer-bar {
+    width: 120px !important;
+    height: 16px !important;
+
+    overflow: hidden;
+
+    background: #ffffff;
+
+    border: 1px solid #404040;
+    border-radius: 1px;
+
+    box-shadow:
+        inset 1px 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+#stage #timer-fill {
+    height: 100%;
+
+    background:
+        linear-gradient(
+            180deg,
+            #69d969 0%,
+            #39a839 50%,
+            #168a16 100%
+        );
+
+    border-right: 1px solid #0c5e0c;
+
     transition: width 0.1s linear;
 }
-#timer-text {
-    font-variant-numeric: tabular-nums;
-    font-size: 13px; color: var(--muted); min-width: 34px; text-align: right;
+
+#stage #timer-text {
+    min-width: 42px;
+
+    font-family: var(--mono);
+    font-size: 12px !important;
+    font-weight: bold;
+
+    color: #ffffff;
+
+    text-align: right;
+
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
 }
 
-/* ---------------- Board ---------------- */
-#board {
-    position: relative;
-    min-height: 320px;
-    padding: 26px;
-    display: flex; align-items: center; justify-content: center;
-}
-#board canvas { display: block; }
+/* ============================================================
+   BOARD
+   ============================================================ */
 
-/* ---------------- Footer ---------------- */
-#footer {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 18px;
-    border-top: 1px solid var(--line);
-    min-height: 44px;
-}
-#dots { display: flex; gap: 7px; }
-.dot {
-    width: 9px; height: 9px; border-radius: 50%;
-    background: rgba(255,255,255,0.14);
-    transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
-}
-.dot.done { background: var(--success); box-shadow: 0 0 10px var(--success); }
-.dot.fail { background: var(--danger);  box-shadow: 0 0 10px var(--danger); }
-.dot.active { background: var(--accent); transform: scale(1.3); }
-#hint {
-    font-size: 11px; letter-spacing: 1px; color: var(--muted);
-    text-transform: uppercase;
+#stage #board {
+    flex: 1;
+
+    min-height: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 16px;
+
+    background: var(--xp-bg);
+
+    overflow: auto;
 }
 
-/* ---------------- Flash overlay ---------------- */
-#flash {
-    position: fixed; inset: 0; z-index: 5;
-    display: grid; place-items: center;
-    pointer-events: none;
-    background: transparent;
-}
-#flash-text {
-    font-family: var(--display); font-weight: 700;
-    font-size: 48px; letter-spacing: 6px; text-transform: uppercase;
-    padding: 14px 36px; border-radius: 12px;
-    background: rgba(10, 14, 20, 0.82);
-    animation: flash-pop 0.4s cubic-bezier(0.2,0.9,0.2,1) both;
-}
-#flash.win  #flash-text { color: var(--success); text-shadow: 0 0 30px var(--success); }
-#flash.lose #flash-text { color: var(--danger);  text-shadow: 0 0 30px var(--danger); }
-@keyframes flash-pop {
-    from { opacity: 0; transform: scale(0.6); }
-    to   { opacity: 1; transform: scale(1); }
+#stage.dui-mode #board {
+    width: 100% !important;
+
+    flex: 1 !important;
+
+    min-height: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    padding: 16px !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ece9d8,
+            #f5f3ea
+        ) !important;
+
+    overflow: hidden !important;
+
+    pointer-events: all !important;
 }
 
-/* ---------------- Reusable bits for games ---------------- */
-.btn {
-    font-family: var(--display); font-weight: 600;
-    letter-spacing: 1px; font-size: 14px;
-    padding: 12px 20px; border-radius: 8px;
-    border: 1px solid var(--line);
-    background: rgba(255,255,255,0.04);
-    color: var(--text); cursor: pointer;
-    transition: all 0.15s;
-}
-.btn:hover { border-color: var(--accent); background: rgba(0,224,184,0.08); }
-.btn.danger:hover { border-color: var(--danger); background: rgba(255,59,92,0.08); }
+/* ============================================================
+   GAME CANVAS
+   ============================================================ */
 
-.label {
-    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 8px;
+#stage #board canvas {
+    max-width: 100%;
+    max-height: 100%;
+
+    width: auto;
+    height: auto;
+
+    background: #ffffff;
+
+    border: 1px solid #666666;
+
+    border-radius: 2px;
+
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.25),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+
+    image-rendering: auto;
 }
 
-.shake { animation: shake 0.3s; }
+#stage.dui-mode #board canvas {
+    max-width: 100% !important;
+    max-height: 100% !important;
+
+    width: auto !important;
+    height: auto !important;
+
+    background: #ffffff !important;
+
+    border: 1px solid #555555 !important;
+
+    border-radius: 2px !important;
+
+    box-shadow:
+        0 1px 4px rgba(0, 0, 0, 0.35),
+        inset 0 0 0 1px #ffffff !important;
+
+    pointer-events: all !important;
+
+    cursor: pointer !important;
+}
+
+/* ============================================================
+   PANELS / CARDS
+   ============================================================ */
+
+#stage .panel,
+#stage .card,
+#stage .game-panel,
+#stage .game-card {
+    background: var(--xp-panel);
+
+    border: 1px solid var(--xp-border);
+
+    border-radius: 2px;
+
+    box-shadow:
+        inset 1px 1px 0 var(--xp-border-light),
+        0 1px 2px rgba(0, 0, 0, 0.18);
+
+    color: var(--xp-text);
+}
+
+/* ============================================================
+   HEADINGS
+   ============================================================ */
+
+#stage h1,
+#stage h2,
+#stage h3,
+#stage .title,
+#stage .game-title {
+    color: #000000;
+
+    font-family: var(--display);
+
+    font-weight: 700;
+
+    text-shadow: none;
+}
+
+#stage .title,
+#stage .game-title {
+    font-size: 18px;
+
+    margin-bottom: 8px;
+}
+
+/* ============================================================
+   LABELS
+   ============================================================ */
+
+#stage .label,
+#stage label {
+    font-family: var(--display);
+
+    font-size: 12px;
+    font-weight: 600;
+
+    color: var(--xp-text-soft);
+
+    letter-spacing: 0;
+
+    text-transform: none;
+}
+
+#stage .hint,
+#stage .description,
+#stage .subtitle {
+    color: var(--xp-muted);
+
+    font-size: 11px;
+
+    line-height: 1.45;
+}
+
+/* ============================================================
+   XP BUTTONS
+   ============================================================ */
+
+#stage .btn,
+#stage button {
+    min-height: 27px;
+
+    padding: 4px 14px;
+
+    font-family: var(--display);
+
+    font-size: 12px;
+    font-weight: 600;
+
+    color: #000000;
+
+    background:
+        linear-gradient(
+            180deg,
+            #ffffff 0%,
+            #f3f3f3 45%,
+            #d7d7d7 100%
+        );
+
+    border: 1px solid #777777;
+    border-radius: 2px;
+
+    box-shadow:
+        inset 1px 1px 0 #ffffff,
+        inset -1px -1px 0 #b0b0b0;
+
+    cursor: pointer;
+
+    transition:
+        background 0.08s ease,
+        border-color 0.08s ease;
+}
+
+#stage .btn:hover,
+#stage button:hover {
+    background:
+        linear-gradient(
+            180deg,
+            #ffffff 0%,
+            #ffffff 45%,
+            #e4e4e4 100%
+        );
+
+    border-color: var(--xp-blue);
+}
+
+#stage .btn:active,
+#stage button:active {
+    background:
+        linear-gradient(
+            180deg,
+            #cfcfcf 0%,
+            #eeeeee 100%
+        );
+
+    box-shadow:
+        inset 1px 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+/* ============================================================
+   DANGER BUTTON
+   ============================================================ */
+
+#stage .btn.danger {
+    color: #7b0000;
+
+    background:
+        linear-gradient(
+            180deg,
+            #ffffff 0%,
+            #f5e0e0 50%,
+            #ddbaba 100%
+        );
+
+    border-color: #9b5555;
+}
+
+#stage .btn.danger:hover {
+    color: #a00000;
+
+    border-color: var(--xp-red);
+
+    background:
+        linear-gradient(
+            180deg,
+            #ffffff,
+            #f7dcdc
+        );
+}
+
+/* ============================================================
+   INPUTS
+   ============================================================ */
+
+#stage input,
+#stage select,
+#stage textarea {
+    min-height: 28px;
+
+    padding: 5px 7px;
+
+    font-family: var(--display);
+
+    font-size: 13px;
+
+    color: #000000;
+
+    background: #ffffff;
+
+    border: 1px solid #777777;
+    border-radius: 1px;
+
+    outline: none;
+
+    box-shadow:
+        inset 1px 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+#stage input:focus,
+#stage select:focus,
+#stage textarea:focus {
+    border-color: var(--xp-blue);
+
+    box-shadow:
+        0 0 0 1px rgba(0, 84, 227, 0.25),
+        inset 1px 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* ============================================================
+   CODE / PASSWORD / MONOSPACE CONTENT
+   ============================================================ */
+
+#stage .code,
+#stage .password,
+#stage .code-display,
+#stage .sequence,
+#stage .terminal,
+#stage pre {
+    font-family: var(--mono);
+
+    color: #000000;
+
+    background: #ffffff;
+
+    border: 1px solid #777777;
+
+    border-radius: 2px;
+
+    box-shadow:
+        inset 1px 1px 3px rgba(0, 0, 0, 0.18);
+}
+
+/* Make actual password/code values much easier to read */
+#stage .password,
+#stage .code-display,
+#stage .sequence {
+    font-size: 20px;
+    font-weight: 700;
+
+    letter-spacing: 3px;
+
+    line-height: 1.4;
+
+    padding: 10px 14px;
+
+    text-align: center;
+}
+
+/* ============================================================
+   TERMINAL STYLE
+   ============================================================ */
+
+#stage .terminal {
+    background: #000000;
+
+    color: #00ff66;
+
+    border-color: #444444;
+
+    font-family: var(--mono);
+
+    line-height: 1.5;
+}
+
+#stage .terminal .error {
+    color: #ff5555;
+}
+
+#stage .terminal .warning {
+    color: #fff27a;
+}
+
+#stage .terminal .success {
+    color: #55ff77;
+}
+
+/* ============================================================
+   STATUS / FEEDBACK
+   ============================================================ */
+
+#stage .success,
+#stage .correct,
+#stage .complete {
+    color: var(--xp-green);
+}
+
+#stage .error,
+#stage .incorrect,
+#stage .failed {
+    color: var(--xp-red);
+}
+
+#stage .warning {
+    color: #755f00;
+}
+
+/* ============================================================
+   PROGRESS / INDICATORS
+   ============================================================ */
+
+#stage #dots {
+    display: flex;
+
+    align-items: center;
+
+    gap: 5px;
+}
+
+#stage .dot {
+    width: 14px;
+    height: 14px;
+
+    border-radius: 2px;
+
+    background: #ffffff;
+
+    border: 1px solid #777777;
+
+    box-shadow:
+        inset 1px 1px 0 #ffffff;
+
+    transition:
+        background 0.1s ease,
+        transform 0.1s ease;
+}
+
+#stage .dot.active {
+    background: var(--xp-blue);
+
+    border-color: var(--xp-blue-dark);
+
+    transform: scale(1.1);
+
+    box-shadow:
+        0 0 0 1px rgba(0, 84, 227, 0.2);
+}
+
+#stage .dot.done {
+    background: var(--xp-green);
+
+    border-color: #126b12;
+
+    box-shadow: none;
+}
+
+#stage .dot.fail {
+    background: var(--xp-red);
+
+    border-color: #7d0000;
+
+    box-shadow: none;
+}
+
+/* ============================================================
+   HINT / FOOTER
+   ============================================================ */
+
+#stage #footer {
+    min-height: 30px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 5px 8px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #f5f3eb,
+            #d7d3c8
+        );
+
+    border-top: 1px solid #999999;
+
+    color: var(--xp-text-soft);
+}
+
+#stage #hint {
+    font-family: var(--display);
+
+    font-size: 11px;
+    font-weight: 600;
+
+    color: #404040;
+
+    letter-spacing: 0;
+}
+
+/* ============================================================
+   KEY / CONTROL HINTS
+   ============================================================ */
+
+#stage .key,
+#stage kbd {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-width: 22px;
+    min-height: 20px;
+
+    padding: 2px 6px;
+
+    font-family: var(--mono);
+
+    font-size: 10px;
+    font-weight: 700;
+
+    color: #000000;
+
+    background: #ffffff;
+
+    border: 1px solid #666666;
+    border-radius: 2px;
+
+    box-shadow:
+        inset 1px 1px 0 #ffffff,
+        1px 1px 0 #aaa;
+
+    vertical-align: middle;
+}
+
+/* ============================================================
+   FLASH / RESULT SCREEN
+   ============================================================ */
+
+#stage #flash {
+    background: rgba(0, 0, 0, 0.45);
+}
+
+#stage #flash-text {
+    padding: 14px 34px;
+
+    font-family: var(--display);
+
+    font-size: 34px;
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    color: #000000;
+
+    background: var(--xp-bg);
+
+    border: 2px solid #555555;
+    border-radius: 2px;
+
+    box-shadow:
+        inset 1px 1px 0 #ffffff,
+        5px 5px 0 rgba(0, 0, 0, 0.2);
+}
+
+#stage #flash.win #flash-text {
+    color: var(--xp-green);
+
+    background: var(--xp-green-light);
+
+    border-color: var(--xp-green);
+}
+
+#stage #flash.lose #flash-text {
+    color: var(--xp-red);
+
+    background: var(--xp-red-light);
+
+    border-color: var(--xp-red);
+}
+
+/* ============================================================
+   SELECTION / CLICKABLE GAME ELEMENTS
+   ============================================================ */
+
+#stage .clickable,
+#stage .target,
+#stage .option,
+#stage .tile,
+#stage .cell {
+    cursor: pointer;
+
+    border: 1px solid #777777;
+
+    background: #ffffff;
+
+    color: #000000;
+
+    transition:
+        background 0.08s ease,
+        border-color 0.08s ease,
+        transform 0.08s ease;
+}
+
+#stage .clickable:hover,
+#stage .target:hover,
+#stage .option:hover,
+#stage .tile:hover,
+#stage .cell:hover {
+    background: #eef5ff;
+
+    border-color: var(--xp-blue);
+}
+
+#stage .clickable.selected,
+#stage .target.selected,
+#stage .option.selected,
+#stage .tile.selected,
+#stage .cell.selected {
+    background: #dceaff;
+
+    border-color: var(--xp-blue);
+
+    box-shadow:
+        inset 0 0 0 1px #ffffff,
+        0 0 0 1px rgba(0, 84, 227, 0.25);
+}
+
+/* ============================================================
+   READABILITY HELPERS
+   ============================================================ */
+
+#stage .large-text {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+#stage .very-large-text {
+    font-size: 26px;
+    font-weight: 700;
+}
+
+#stage .strong {
+    font-weight: 700;
+    color: #000000;
+}
+
+#stage .muted {
+    color: #555555;
+}
+
+#stage .center {
+    text-align: center;
+}
+
+/* ============================================================
+   XP HIGHLIGHT BOX
+   ============================================================ */
+
+#stage .notice,
+#stage .info,
+#stage .instruction {
+    padding: 8px 10px;
+
+    color: #222222;
+
+    background: #fffef0;
+
+    border: 1px solid #b7a900;
+    border-radius: 2px;
+
+    box-shadow:
+        inset 1px 1px 0 #ffffff;
+}
+
+/* ============================================================
+   FOCUS
+   ============================================================ */
+
+#stage button:focus-visible,
+#stage input:focus-visible,
+#stage select:focus-visible,
+#stage textarea:focus-visible,
+#stage .clickable:focus-visible,
+#stage .option:focus-visible {
+    outline: 1px dotted #000000;
+
+    outline-offset: 2px;
+}
+
+/* ============================================================
+   SHAKE / ANIMATIONS
+   ============================================================ */
+
+@keyframes panel-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.shake {
+    animation: shake 0.3s;
+}
+
 @keyframes shake {
-    0%,100% { transform: translateX(0); }
-    25% { transform: translateX(-7px); }
-    75% { transform: translateX(7px); }
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-6px);
+    }
+
+    75% {
+        transform: translateX(6px);
+    }
 }
 
-.glow-accent  { color: var(--accent); }
-.glow-success { color: var(--success); }
-.glow-danger  { color: var(--danger); }
+/* ============================================================
+   DUI-SPECIFIC OVERRIDES
+   ============================================================ */
+
+#stage.dui-mode .btn {
+    font-family: var(--display);
+
+    font-size: 12px;
+    font-weight: 600;
+
+    border-radius: 2px;
+}
+
+#stage.dui-mode .label {
+    font-family: var(--display);
+
+    font-size: 12px;
+    font-weight: 600;
+
+    color: #333333;
+}
+
+#stage.dui-mode #hint {
+    font-family: var(--display);
+
+    font-size: 11px;
+
+    color: #404040;
+}
+
+#stage.dui-mode #flash-text {
+    font-family: var(--display);
+
+    font-size: 36px;
+}
+
+/* ============================================================
+   IMPORTANT: KEEP GAME CONTENT ABOVE BACKGROUND
+   ============================================================ */
+
+#stage.dui-mode #board > * {
+    position: relative;
+    z-index: 2;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 700px) {
+    #stage:not(.dui-mode) {
+        width: 94vw;
+    }
+
+    #stage #board {
+        padding: 10px;
+    }
+
+    #stage .password,
+    #stage .code-display,
+    #stage .sequence {
+        font-size: 17px;
+        letter-spacing: 2px;
+    }
+}
+
+/* Transparent input surface used by texture-replacement DUI mode. */
+#dui-input-capture {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: transparent !important;
+    pointer-events: all !important;
+    z-index: 2147483647 !important;
+}
+
+
+/* ============================================================
+   DUI VIRTUAL CURSOR
+   ============================================================ */
+
+html.dui-document,
+html.dui-document * {
+    cursor: none !important;
+}
+
+/* A transparent background is correct for a fullscreen NUI overlay and wrong
+   for a texture replacement: the DUI's alpha is preserved, so a transparent
+   page renders as an invisible (or black) prop screen. The DUI document gets
+   an opaque surface of its own. */
+html.dui-document,
+html.dui-document body {
+    background: var(--xp-bg) !important;
+}
+
+#cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    will-change: transform;
+    width: 3vh;
+    height: 3vh;
+    z-index: 2147483647;
+    pointer-events: none;
+    user-select: none;
+    background: no-repeat center / contain;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 2l14 11-6.5.9 3.7 6.6-2.8 1.6-3.7-6.6L5 20z' fill='white' stroke='black' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E");
+    filter: drop-shadow(0 0 0.4vh rgba(0,0,0,.7));
+}
+
+#cursor.hot {
+    margin-left: -1.1vh;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 13V4a1.5 1.5 0 0 1 3 0v6m0-1a1.5 1.5 0 0 1 3 0v2m0-1a1.5 1.5 0 0 1 3 0v5a6 6 0 0 1-6 6h-1.5a6 6 0 0 1-4.9-2.6L4 15.6a1.6 1.6 0 0 1 2.5-2L10 17' fill='white' stroke='black' stroke-width='1.3' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+#cursor.grab {
+    margin-left: -1.5vh;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 11V6.5a1.5 1.5 0 0 1 3 0V11V5.5a1.5 1.5 0 0 1 3 0V11V6.5a1.5 1.5 0 0 1 3 0V13a6 6 0 0 1-6 6h-1a6 6 0 0 1-6-6v-2a1.5 1.5 0 0 1 3 0z' fill='white' stroke='black' stroke-width='1.3' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+#cursor.down {
+    filter: drop-shadow(0 0 0.4vh rgba(0,0,0,.7)) brightness(.75);
+}

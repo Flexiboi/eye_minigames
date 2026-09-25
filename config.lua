@@ -1,17 +1,50 @@
 Config = {}
 
--- Allow ESC to cancel a game. Per-call `allowCancel` overrides this.
 Config.AllowCancelByDefault = true
 
--- Register /mg, /mglist, /mgrandom, /mgall test commands.
--- Set to false on a live/production server.
+-- Built-in local test commands. Set false for production servers.
 Config.EnableTestCommands = true
 
--- Sound effects (synthesized, no audio files). Per-call `sound`/`volume` override.
 Config.Sound = true        -- master on/off
 Config.Volume = 0.5        -- 0.0 - 1.0
 
--- Default difficulty (1-5) and per-game options. Override per call.
+Config.DuiSyncRange = 25.0
+
+Config.DuiWidth = 1280
+Config.DuiHeight = 720
+
+-- Prints what the DUI cursor loop is doing to the client console (F8):
+-- whether the loop started, whether raw-key input is available, the cursor
+-- position, clicks, and every key forwarded to the page. Turn on when a DUI is
+-- not responding, off for production.
+Config.DuiDebug = false
+
+Config.DuiTestProp = {
+    -- `txd` and `texture` are the ORIGINAL texture dictionary + texture name on
+    -- the model, and they are model-specific. They are what AddReplaceTexture
+    -- targets. If the pair is wrong the replacement silently does nothing and
+    -- the prop keeps its own screen, with no error printed.
+    --
+    -- Use OpenIV / CodeWalker to confirm the pair for any other model. Another
+    -- known-good example:
+    --   model = 'hei_prop_hei_securitypanel'
+    --   txd = 'hei_prop_hei_securitypanel'
+    --   texture = 'prop_hei_securitypanel_screen'
+    model = 'prop_monitor_01b',
+    txd = 'prop_monitor_01b',
+    texture = 'prop_monitor_01b',
+    -- Normalized visible/clickable texture rectangle. Keep 0..1.
+    uv = { uMin = 0.0, uMax = 1.0, vMin = 0.0, vMax = 1.0, flipX = false, flipY = false, rotate = 0 },
+    screenWidth = 0.60,
+    screenHeight = 0.34,
+    screenOffset = vector3(0.0, 0.0, 0.0),
+    camera = true,
+    cameraDistance = 1.0,
+    cameraHeight = 0.0,
+    cameraFov = 40.0,
+    cameraSide = 1.0
+}
+
 Config.Defaults = {
     livewire    = { difficulty = 2 },
     flatline    = { difficulty = 2, rounds = 3 },
@@ -24,7 +57,6 @@ Config.Defaults = {
     decrypt     = { difficulty = 2 },
     gaslight    = { difficulty = 2 },
 
-    -- advanced pack (inspired by well-known game mechanics)
     overflow     = { difficulty = 2 },
     breachmatrix = { difficulty = 2 },
     daemonrun    = { difficulty = 2 },
@@ -34,7 +66,6 @@ Config.Defaults = {
     lightsout    = { difficulty = 2 },
     slidepuzzle  = { difficulty = 2 },
 
-    -- AAA-inspired pack
     resonance    = { difficulty = 2 },
     intrusion    = { difficulty = 2 },
     override     = { difficulty = 2 },
@@ -44,17 +75,16 @@ Config.Defaults = {
     constellation = { difficulty = 2 },
     archery      = { difficulty = 2 },
 
-    -- essentials (universal, fit any script)
     skillcheck   = { difficulty = 2, rounds = 3 },
     lockpick     = { difficulty = 2 },
     keypad       = { difficulty = 2 },
+    password     = { difficulty = 2, password = "1234", attempts = 3, caseSensitive = true },
     quicktime    = { difficulty = 2 },
     mash         = { difficulty = 2 },
     reaction     = { difficulty = 2 },
     stacker      = { difficulty = 2 },
     targets      = { difficulty = 2 },
 
-    -- jobs (job-specific)
     fishing      = { difficulty = 2 },
     mining       = { difficulty = 2 },
     cooking      = { difficulty = 2 },
@@ -67,7 +97,6 @@ Config.Defaults = {
     forge        = { difficulty = 2 },
     diving       = { difficulty = 2 },
 
-    -- crime & heist
     tripwire     = { difficulty = 2 },
     pickpocket   = { difficulty = 2 },
     getaway      = { difficulty = 2 },
@@ -75,37 +104,30 @@ Config.Defaults = {
     counterfeit  = { difficulty = 2 },
     chopshop     = { difficulty = 2 },
 
-    -- jobs & trades (extended)
     lugnuts      = { difficulty = 2 },
     paintspray   = { difficulty = 2 },
     crane        = { difficulty = 2 },
 
-    -- medical & rescue
     suture       = { difficulty = 2 },
     bonepin      = { difficulty = 2 },
     vitals       = { difficulty = 2 },
 
-    -- heist
     thermite     = { difficulty = 2 },
     lasergrid    = { difficulty = 2 },
     vaultdrill   = { difficulty = 2 },
     jammer       = { difficulty = 2 },
     dataheist    = { difficulty = 2 },
 
-    -- mechanic (sorting / moving things around)
     partsort     = { difficulty = 2 },
     toolbox      = { difficulty = 2 },
     packing      = { difficulty = 2 },
     beltsort     = { difficulty = 2 },
 
-    -- police & forensics
     fingerprint  = { difficulty = 2 },
     breathalyzer = { difficulty = 2 },
 
-    -- drugs & chemistry
     titration    = { difficulty = 2 },
     pillpress    = { difficulty = 2 }
 }
 
--- Freeze the player while a game is open.
 Config.FreezePlayer = false
